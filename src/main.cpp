@@ -19,7 +19,7 @@ void Task1(void *pvParameters)
 {
   while (1)
   {
-    int status = DHT.read();
+    int status = DHT.read();  // > 1000
 
     Serial.print("DHT20 Temperature: ");
     Serial.print(DHT.getTemperature(), 1);
