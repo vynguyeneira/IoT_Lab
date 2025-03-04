@@ -4,8 +4,8 @@
 #include <Arduino_MQTT_Client.h>
 #include <ThingsBoard.h>
 
-constexpr char WIFI_SSID[] = "nhatvu";
-constexpr char WIFI_PASSWORD[] = "25122003";
+constexpr char WIFI_SSID[] = "camellia";
+constexpr char WIFI_PASSWORD[] = "12345678912";
 constexpr uint32_t MAX_MESSAGE_SIZE = 1024U;
 
 constexpr char TOKEN[] = "1tqsqvh62gmcrj1yf0w7";
