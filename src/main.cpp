@@ -7,7 +7,7 @@
 #include <ArduinoOTA.h>
 
 constexpr char WIFI_SSID[] = "camellia";
-constexpr char WIFI_PASSWORD[] = "12345678912";
+constexpr char WIFI_PASSWORD[] = "12344321";
 constexpr uint32_t MAX_MESSAGE_SIZE = 1024U;
 
 constexpr char TOKEN[] = "1tqsqvh62gmcrj1yf0w7";
@@ -139,7 +139,6 @@ void TaskTBConnection(void *pvParameters)
       if (!tb.connect(THINGSBOARD_SERVER, TOKEN, THINGSBOARD_PORT))
       {
         Serial.println("Failed to connect");
-        return;
       }
       vTaskDelay(pdMS_TO_TICKS(10000));  //acceptable disconnected time with TB
     }
