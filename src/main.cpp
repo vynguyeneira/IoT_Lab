@@ -10,7 +10,8 @@ constexpr char WIFI_SSID[] = "camellia";
 constexpr char WIFI_PASSWORD[] = "12344321";
 constexpr uint32_t MAX_MESSAGE_SIZE = 1024U;
 
-constexpr char TOKEN[] = "1tqsqvh62gmcrj1yf0w7";
+constexpr char TOKEN[] = "UcoYCGKjBcztjBvpIJet";
+//1tqsqvh62gmcrj1yf0w7
 
 constexpr char THINGSBOARD_SERVER[] = "app.coreiot.io";
 constexpr uint16_t THINGSBOARD_PORT = 1883U;
@@ -21,12 +22,44 @@ ThingsBoard tb(mqttClient, MAX_MESSAGE_SIZE);
 
 #define SERIAL_DEBUG_BAUD 115200UL // monitor speed
 
+
+//--------------- For Scheduler ---------------//
+#define LED_PIN_1 18
+#define LED_PIN_2 23
+
+constexpr std::array<const char *, 2U> SHARED_ATTRIBUTES_LIST = {
+  "LED_STATE_1",
+  "LED_STATE_2"
+};
+
+void processSharedAttributes(const Shared_Attribute_Data &data) {
+  for (auto it = data.begin(); it != data.end(); ++it) {
+    if (strcmp(it->key().c_str(), "LED_STATE_1") == 0) {
+      uint8_t ledState = it->value().as<bool>();
+      digitalWrite(LED_PIN_1, ledState);
+      Serial.print("LED 1 state is set to: ");
+      Serial.println(ledState);
+    } else if (strcmp(it->key().c_str(), "LED_STATE_2") == 0) {
+      uint8_t ledState = it->value().as<bool>();
+      digitalWrite(LED_PIN_2, ledState);
+      Serial.print("LED 2 state is set to: ");
+      Serial.println(ledState);
+    }
+  }
+}
+
+const Shared_Attribute_Callback attributes_callback
+  (&processSharedAttributes, SHARED_ATTRIBUTES_LIST.cbegin(), SHARED_ATTRIBUTES_LIST.cend());
+const Attribute_Request_Callback attribute_shared_request_callback
+  (&processSharedAttributes, SHARED_ATTRIBUTES_LIST.cbegin(), SHARED_ATTRIBUTES_LIST.cend());
+
+
 // Task handles
-TaskHandle_t Task0Handle = NULL;
 TaskHandle_t Task1Handle = NULL;
 TaskHandle_t Task2Handle = NULL;
 TaskHandle_t Task3Handle = NULL;
 TaskHandle_t Task4Handle = NULL;
+TaskHandle_t Task5Handle = NULL;
 
 // DHT20 Sensor
 DHT20 DHT;
@@ -131,10 +164,22 @@ void TaskTBConnection(void *pvParameters)
       {
         Serial.println("Failed to connect");
       }
+
+      if (!tb.Shared_Attributes_Subscribe(attributes_callback)) {
+        Serial.println("Failed to subscribe for shared attribute updates");
+        return;
+      }
+  
+      Serial.println("Subscribe done");
+  
+      if (!tb.Shared_Attributes_Request(attribute_shared_request_callback)) {
+        Serial.println("Failed to request for shared attributes");
+        return;
+      }
+    }
       vTaskDelay(pdMS_TO_TICKS(10000));  //acceptable disconnected time with TB
     }
   }
-}
 
 void TaskWifiConnection(void *pvParameters)
 {
@@ -148,6 +193,15 @@ void TaskWifiConnection(void *pvParameters)
   }
 }
 
+void TaskTBLoop (void *pvParameters)
+{
+  while (1)
+  {
+    tb.loop();
+    vTaskDelay(pdMS_TO_TICKS(10));   //must be call continuously
+  }
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -156,6 +210,11 @@ void setup()
   Serial.begin(SERIAL_DEBUG_BAUD);
   delay(1000);
   InitWiFi();
+
+  pinMode(18, OUTPUT);
+  pinMode(23, OUTPUT);
+  digitalWrite(18, LOW);
+  digitalWrite(23, LOW);
 
   // Initialize DHT20
   if (!DHT.begin())
@@ -171,6 +230,7 @@ void setup()
   xTaskCreate(TaskHumi, "Humidity", 2000, NULL, 1, &Task2Handle);
   xTaskCreate(TaskTBConnection, "Check Connection Thingsboard", 2048, NULL, 1, &Task3Handle);
   xTaskCreate(TaskWifiConnection, "Check Wifi", 2048, NULL, 1, &Task4Handle);
+  xTaskCreate(TaskTBLoop, "TB Loop", 2048, NULL, 1, &Task5Handle);
 }
 
 void loop()
