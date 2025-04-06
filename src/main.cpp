@@ -7,7 +7,7 @@
 #include <ArduinoOTA.h>
 
 constexpr char WIFI_SSID[] = "camellia";
-constexpr char WIFI_PASSWORD[] = "12345678912";
+constexpr char WIFI_PASSWORD[] = "12344321";
 constexpr uint32_t MAX_MESSAGE_SIZE = 1024U;
 
 constexpr char TOKEN[] = "1tqsqvh62gmcrj1yf0w7";
@@ -187,25 +187,25 @@ void TaskMSSV(void *pvParameters)
   }
 }
 
-// void TaskLEDControl(void *pvParameters)
-// {
-//   pinMode(GPIO_NUM_13, OUTPUT); // Initialize LED pin
-//   int ledState = 0;
-//   while (1)
-//   {
+void TaskLEDControl(void *pvParameters)
+{
+  pinMode(GPIO_NUM_13, OUTPUT); // Initialize LED pin
+  int ledState = 0;
+  while (1)
+  {
 
-//     if (ledState == 0)
-//     {
-//       digitalWrite(GPIO_NUM_13, HIGH); // Turn ON LED
-//     }
-//     else
-//     {
-//       digitalWrite(GPIO_NUM_13, LOW); // Turn OFF LED
-//     }
-//     ledState = 1 - ledState;
-//     vTaskDelay(2000);
-//   }
-// }
+    if (ledState == 0)
+    {
+      digitalWrite(GPIO_NUM_13, HIGH); // Turn ON LED
+    }
+    else
+    {
+      digitalWrite(GPIO_NUM_13, LOW); // Turn OFF LED
+    }
+    ledState = 1 - ledState;
+    vTaskDelay(2000);
+  }
+}
 
 void Task4(void *pvParameters)
 {
@@ -308,7 +308,7 @@ void setup()
   xTaskCreate(TaskTemp, "Temperature", 2000, NULL, 1, &Task1Handle);
   xTaskCreate(TaskHumi, "Humidity", 2000, NULL, 1, &Task2Handle);
   xTaskCreate(TaskMSSV, "MSSV", 1000, NULL, 1, &Task3Handle);
-  // xTaskCreate(TaskLEDControl, "LED Control", 2048, NULL, 2, NULL);
+  xTaskCreate(TaskLEDControl, "LED Control", 2048, NULL, 2, NULL);
   xTaskCreate(Task4, "Check Connection Thingsboard", 2048, NULL, 1, &Task4Handle);
   xTaskCreate(Task5, "Check Wifi", 2048, NULL, 1, &Task5Handle);
   xTaskCreate(Task6, "Send Attribute Data", 2000, NULL, 1, &Task6Handle);
